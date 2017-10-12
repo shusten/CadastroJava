@@ -88,4 +88,43 @@ public class ProdutoDAO {
         
     }
     
+    //Método sobrecarga
+    public List<Produto> findAll(int idCategoria){
+        String sql = "SELECT idCategoria, idProduto, p.descricao AS pdesc, qtd, valor, c.descricao AS cdesc FROM produto AS p INNER JOIN categoria AS c USING(idCategoria) WHERE p.idCategoria = ?";
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        
+        List<Produto> produtos = new ArrayList<>();
+        
+        try {
+            stmt = con.prepareCall(sql);
+            stmt.setInt(1, idCategoria);
+            rs = stmt.executeQuery();
+            
+            while(rs.next()){
+                Produto produto = new Produto();
+                produto.setIdProduto(rs.getInt("idProduto"));
+                produto.setDescricao(rs.getString("pdesc"));
+                produto.setQtd(rs.getInt("qtd"));
+                produto.setValor(rs.getDouble("valor"));
+                
+                Categoria categoria = new Categoria();
+                categoria.setIdCategoria(rs.getInt("idCategoria"));
+                categoria.setDescricao(rs.getString("cdesc"));
+                
+                produto.setCategoria(categoria);
+                
+                
+                produtos.add(produto);
+            }
+            
+        } catch (SQLException ex) {
+            System.err.println("Erro: " + ex);
+        } finally{
+            ConnectionFactory.closeConnection(con, stmt, rs);
+        }
+        return produtos;
+        
+    }
+    
 }
